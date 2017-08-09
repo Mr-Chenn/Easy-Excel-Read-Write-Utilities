@@ -3,6 +3,8 @@ package excelUtils;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Properties;
 
 
@@ -13,7 +15,22 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelReadClass 
 {
-	public static String propertiesFilePath = "C:\\selenium\\Global properties file\\GlobalFile.properties";
+	public String globalPropertiesFilePath;
+	public String excelFilePath;
+	public String excelSheetName;
+	/***
+	 * Constructor to initialize the ExcelReadClass. MUST create object of this class with these params
+	 * @param globalPropertiesFilePath --> Pass properties file path 
+	 * @param excelFilePath --> excel file path 
+	 * @param excelSheetName --> excel sheet name
+	 */
+	public ExcelReadClass(String globalPropertiesFilePath, String excelFilePath, String excelSheetName)
+	{
+		this.globalPropertiesFilePath=globalPropertiesFilePath;
+		this.excelFilePath=excelFilePath;
+		this.excelSheetName=excelSheetName;
+		
+	}
 	
 	/***
 	 * Below method returns the count of rows or columns in the excel sheet. NOT 0 based. Actual counts.
@@ -25,14 +42,9 @@ public class ExcelReadClass
 	{	
 		arg = arg.toUpperCase();
 		
-		//Loading the properties file
-		Properties prop = new Properties();
-		FileInputStream fisProp = new FileInputStream(propertiesFilePath);
-		prop.load(fisProp);
-		
-		FileInputStream fis = new FileInputStream(prop.getProperty("EXCELFILEPATH"));
+		FileInputStream fis = new FileInputStream(excelFilePath);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
-		XSSFSheet sheet = wb.getSheet(prop.getProperty("SHEETNAME"));
+		XSSFSheet sheet = wb.getSheet(excelSheetName);
 				
 		int numOfRows = sheet.getLastRowNum() + 1;
 		int numOfColumnHeaders = sheet.getRow(0).getLastCellNum();
@@ -61,22 +73,20 @@ public class ExcelReadClass
 	{
 		String cellValue="";
 		
-		Properties prop = new Properties();
-		FileInputStream fisProp = new FileInputStream(propertiesFilePath);
-		prop.load(fisProp);
-		
-		FileInputStream fis = new FileInputStream(prop.getProperty("EXCELFILEPATH"));
+		FileInputStream fis = new FileInputStream(excelFilePath);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
-		XSSFSheet sheet = wb.getSheet(prop.getProperty("SHEETNAME"));
-		XSSFRow row = sheet.getRow(rownum);
-		XSSFCell cell = row.getCell(colnum);
+		XSSFSheet sheet = wb.getSheet(excelSheetName);
+		
 	
 		try {
+			XSSFRow row = sheet.getRow(rownum);
+			XSSFCell cell = row.getCell(colnum);
 			cellValue = cell.getStringCellValue();
 		} catch (Exception e) {
 			cellValue = null;
 		}		
-		finally {		
+		finally {
+			System.out.println("cellValue is "+cellValue);
 			return cellValue;
 		}
 		
@@ -102,7 +112,7 @@ public class ExcelReadClass
 		 {
 			 lhMap.put(getDataFromExcelCell(0, i), i);
 		 }
-		 System.out.println(lhMap);		 
+		 //System.out.println(lhMap);		 
 		 
 		 try {
 			 colIndex = lhMap.get(columnHeaderName);		 
@@ -127,10 +137,38 @@ public class ExcelReadClass
 	public String getDataFromExcelCell(String columnHeaderName, int rownum) throws IOException
 	{	
 		int colnum = getIndexOfExcelColumn(columnHeaderName);
-		//System.out.println("Index of "+columnHeaderName +" is = "+colnum);
+		System.out.println("Index of "+columnHeaderName +" is = "+colnum);
 		String cellValue = getDataFromExcelCell(rownum,colnum);
 		return cellValue;		
 	}
+	
+	/***
+	 * 
+	 * @param columnHeaderName --> column header name
+	 * @return --> returns linked list of strings containing all values under the column header
+	 * @throws IOException
+	 */
+	public LinkedList<String> getDataFromExcelColumn(String columnHeaderName) throws IOException
+	{	
+		//System.out.println("Inside getDataFromExcelCell method");
+		int colnum = getIndexOfExcelColumn(columnHeaderName);
+		System.out.println("Index of "+columnHeaderName +" is = "+colnum);
+		//System.out.println("number of rows/items under the above column ="+(getRowColumnCount("ROWS")-1));
+		
+		LinkedList<String> lList = new LinkedList<String>();
+		System.out.println("number of rows = "+getRowColumnCount("ROWS"));
+		for(int i=1;i<getRowColumnCount("ROWS");i++)
+		{
+			System.out.println("**"+i);
+			lList.add(getDataFromExcelCell(columnHeaderName,i));
+		}
+		
+		//System.out.println(lList);
+		return lList;
+		
+		
+	}
+	
 	
 	
 }

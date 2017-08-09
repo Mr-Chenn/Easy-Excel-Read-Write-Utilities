@@ -14,7 +14,23 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelWriteClass 
 {
-	public static String propertiesFilePath = "C:\\selenium\\Global properties file\\GlobalFile.properties";
+	public String globalPropertiesFilePath;
+	public String excelFilePath;
+	public String excelSheetName;
+	/***
+	 * Constructor to initialize the ExcelWriteClass.MUST create object with these params.
+	 * Once the object is created, other methods can be accessed easily with minimum number of params
+	 * @param globalPropertiesFilePath --> Pass properties file path. 
+	 * @param excelFilePath --> excel file path 
+	 * @param excelSheetName --> excel sheet name
+	 */
+	public ExcelWriteClass(String globalPropertiesFilePath, String excelFilePath, String excelSheetName)
+	{
+		this.globalPropertiesFilePath=globalPropertiesFilePath;
+		this.excelFilePath=excelFilePath;
+		this.excelSheetName=excelSheetName;
+		
+	}
 	
 	/***
 	 * Below method returns the count of rows or columns in the excel sheet. NOT 0 based. Actual counts.
@@ -25,7 +41,7 @@ public class ExcelWriteClass
 	 */
 	public int getRowColumnCount(String arg) throws IOException 
 	{	
-		ExcelReadClass r = new ExcelReadClass();
+		ExcelReadClass r = new ExcelReadClass(arg, arg, arg);
 		return r.getRowColumnCount(arg);		 
 	}
 		
@@ -41,13 +57,11 @@ public class ExcelWriteClass
 	{
 		rownum = rownum-1;
 		colnum = colnum-1;
-		Properties prop = new Properties();
-		FileInputStream fisProp = new FileInputStream(propertiesFilePath);
-		prop.load(fisProp);
 		
-		FileInputStream fis = new FileInputStream(prop.getProperty("EXCELFILEPATH"));
+		
+		FileInputStream fis = new FileInputStream(excelFilePath);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
-		XSSFSheet sheet = wb.getSheet(prop.getProperty("SHEETNAME"));
+		XSSFSheet sheet = wb.getSheet(excelSheetName);
 		
 		try {
 			XSSFRow row = sheet.getRow(rownum);
@@ -64,7 +78,7 @@ public class ExcelWriteClass
 			
 		}
 		
-		FileOutputStream fos = new FileOutputStream(prop.getProperty("EXCELFILEPATH"));
+		FileOutputStream fos = new FileOutputStream(excelFilePath);
 		wb.write(fos);
 		fos.close();
 		fis.close();
@@ -77,10 +91,11 @@ public class ExcelWriteClass
 	 * @param rownum --> is the cell number in the row. 0 references to column header. pass 5 to set 5th cell in column(excel row =6). 
 	 * @param text  --> is the string text you want to write to the excel
 	 * @throws IOException
+	 * 
 	 */
 	public void setDataToExcelCell(String columnHeaderName, int rownum, String text) throws IOException
 	{
-		ExcelReadClass r = new ExcelReadClass();
+		ExcelReadClass r = new ExcelReadClass("", excelFilePath, excelSheetName);
 		int colnum = r.getIndexOfExcelColumn(columnHeaderName);
 		System.out.println("Index of "+columnHeaderName +" is = "+colnum);
 		setDataToExcelCell(rownum + 1, colnum + 1, text); //adding 1 to rownum, colnum because - set method is not 0 based
